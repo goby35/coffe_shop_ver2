@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <h1>Welcome to the Login Page</h1>
+    <form method="post">
+        <h3 class="align-items-center justify-content-center d-flex">Login</h3>
+        <div class="form-group">
+            <label for="identifier">Email or Username</label>
+            <input type="text"
+            class="form-control"
+            id="identifier"
+            name="identifier"
+            placeholder="Enter your email or username"
+            required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" 
+            class="form-control " 
+            id="password" 
+            name="password" 
+            placeholder="Enter your password" 
+            required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+        
+{% endblock %}
