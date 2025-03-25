@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}HR Management{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">
+                            <span data-feather="home"></span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/hr_management">
+                            <span data-feather="users"></span>
+                            Quản lý HR
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu_items">
+                            <span data-feather="file"></span>
+                            Quản lý Menu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="bar-chart-2"></span>
+                            Quản lý Doanh thu
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+            </div>
+            <div class="container">
+                <h1>Danh sách user</h1>
+                <form method="post" action="{{ url_for('auth.hr_management') }}">
+                    <input type="hidden" name="action" value="create">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" id="is_admin" name="is_admin">
+                        <label for="is_admin">Admin</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </form>
+                <hr>
+                <h2>Users</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Admin</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if user %}
+                            {% for user in user %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <span class="user-info"> {{ user.username }}</span>
+                                    <input type="text" class="form-control user-edit" name="username" value="{{ user.username }}" style="display: none;">
+                                </td>
+                                <td>
+                                    <span class="user-info"> {{ user.email }}</span>
+                                    <input type="text" class="form-control user-edit" name="email" value="{{ user.email }}" style="display: none;">
+                                </td>
+                                <td>
+                                    <span class="user-info"> {{ 'Yes' if user.is_admin else 'No' }}</span>
+                                    <input type="checkbox" class="form-check-input user-edit" name="is_admin" {% if user.is_admin %}checked {% endif %} style="display: none;">
+                                </td>   
+                                <td>
+                                    <button class="btn btn-warning edit-btn" onclick="editUser(this, '{{ user.id }}')">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteUser('{{ user.id }}')">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <p>No users found.</p>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+function editUser(button, userId) {
+    var row = button.closest('tr');
+    var spans = row.querySelectorAll('.user-info');
+    var inputs = row.querySelectorAll('.user-edit');
+    var editBtn = row.querySelector('.edit-btn');
+
+    if (editBtn.textContent === 'Edit') {
+        spans.forEach(span => span.style.display = 'none');
+        inputs.forEach(input => input.style.display = 'block');
+        editBtn.textContent = 'Save';
+    } else {
+        var username = row.querySelector('input[name="username"]').value;
+        var email = row.querySelector('input[name="email"]').value;
+        var isAdmin = row.querySelector('input[name="is_admin"]').checked;
+
+        saveUser(userId, username, email, isAdmin);
+
+        spans[0].textContent = username;
+        spans[1].textContent = email;
+        spans[2].textContent = isAdmin ? 'Yes' : 'No';
+
+        spans.forEach(span => span.style.display = 'block');
+        inputs.forEach(input => input.style.display = 'none');
+        editBtn.textContent = 'Edit';
+    }
+}
+
+function saveUser(userId, username, email, isAdmin) {
+    var formData = new FormData();
+    formData.append('action', 'edit');
+    formData.append('user_id', userId);
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('is_admin', isAdmin ? 'on' : 'off');
+
+    fetch('{{ url_for("auth.hr_management") }}', {
+        method: 'POST',
+        body: formData
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            console.log('User updated successfully');
+        } else {
+            console.error('Error updating user:', data.error);
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function deleteUser(userId) {
+    var formData = new FormData();
+    formData.append('action', 'delete');
+    formData.append('user_id', userId);
+
+    fetch('{{ url_for("auth.hr_management") }}', {
+        method: 'POST',
+        body: formData
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            console.error('Error deleting user:', data.error);
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+</script>
+
+{% endblock %}

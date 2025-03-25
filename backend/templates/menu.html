@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %} Menu {% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="sidebar">
+                <h3>Search</h3>
+                <form method="GET" action="{{ url_for('menu.manage_item') }}">
+                    <input type="text" name="search" placeholder="Search..." class="form-control">
+                    <button type="submit" class="btn btn-primary mt-2">Search</button>
+                </form>
+                <h3 class="mt-4">Categories
+                    <button type="button" class="btn btn-outline-secondary btn-sm ml-2" onclick="toggleCategoryInput()">+</button>
+                </h3>
+                <div id="category-input" style="display: none;">
+                    <form method="post" action="{{ url_for('menu.manage_category') }}" onsubmit="return handleCategorySubmit(event)">
+                        <input type="hidden" name="action" value="create">
+                        <div class="form-group">
+                            <label for="category-name">Category name</label>
+                            <input type="text" class="form-control" id="category-name" name="name" required>
+                        </div>
+                    </form>
+                </div>
+                <ul class="list-group mt-2">
+                    {% for category in category %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('menu.manage_category', id=category.id) }}">{{ category.name }}</a>
+                        <form method="post" action="{{ url_for('menu.manage_category') }}" onsubmit="return confirm('Are you sure you want to delete this category?');">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ category.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">x</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <h1>ADD ITEM</h1>
+            <form method="post" action="{{ url_for('menu.manage_item') }}" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="create">
+                <div class="form-group">
+                    <label for="item-name">Item name</label>
+                    <input type="text" class="form-control" id="item-name" name="item-name" placeholder="Enter item name" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" class="form-control" id="price" name="price" placeholder="Enter price" required>
+                </div>
+                <div class="form-group">
+                    <label for="cost">Cost</label>
+                    <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter cost" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select class="form-control" id="category" name="category_id" required>
+                        {% for category in category %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Create Item</button>
+            </form>
+            <table class="table table-striped mt-4">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Cost</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in item %}
+                        <tr>
+                            <td>
+                                <span class="item-info">
+                                    {% if item.image_url %}
+                                        <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% else %}
+                                        No image
+                                    {% endif %}
+                                </span>
+                                <input type="file" class="form-control item-edit" name="image" style="display: none;" accept="image/*">
+                            </td>
+                            <td>
+                                <span class="item-info">{{ item.name }}</span>
+                                <input type="text" class="form-control item-edit" name="item-name" value="{{ item.name }}" style="display: none;">
+                            </td>
+                            <td>
+                                <span class="item-info">{{ format_currency(item.price) }}</span>
+                                <input type="number" class="form-control item-edit" name="price" value="{{ item.price }}" style="display: none;">
+                            </td>
+                            <td>
+                                <span class="item-info">{{ format_currency(item.cost) }}</span>
+                                <input type="number" class="form-control item-edit" name="cost" value="{{ item.cost }}" style="display: none;">
+                                
+                            </td>
+                            <td>
+                                <span class="item-info">{{ item.category.name }}</span>
+                                <select class="form-control item-edit" name="category_id" style="display: none;">
+                                    {% for category in category %}
+                                    <option value="{{ category.id }}" {% if category.id == item.category_id %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-warning edit-btn" onclick="editItem(this, '{{ item.id }}')">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteItem('{{ item.id }}')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>  
+
+<script>
+function toggleCategoryInput() {
+    var categoryInput = document.getElementById('category-input');
+    if (categoryInput.style.display === 'none' || categoryInput.style.display === '') {
+        categoryInput.style.display = 'block';
+    } else {
+        categoryInput.style.display = 'none';
+    }
+}
+
+function handleCategorySubmit(event) {
+    event.preventDefault();
+    var form = event.target;
+    var input = form.querySelector('input[name="name"]');
+    if (input.value.trim() !== '') {
+        form.submit();
+    }
+}
+</script>
+
+<!-- Edit, delete Item -->
+<script>
+    function editItem(button, itemId) {
+        var row = button.closest('tr');
+        var spans = row.querySelectorAll('.item-info');
+        var inputs = row.querySelectorAll('.item-edit');
+        var editBtn = row.querySelector('.edit-btn');
+    
+        if (editBtn.textContent === 'Edit') {
+            spans.forEach(span => span.style.display = 'none');
+            inputs.forEach(input => input.style.display = 'block');
+            editBtn.textContent = 'Save';
+        } else {
+            var image = row.querySelector('input[name="image"]').files[0];
+            var itemname = row.querySelector('input[name="item-name"]').value;
+            var price = row.querySelector('input[name="price"]').value;
+            var cost = row.querySelector('input[name="cost"]').value;
+            var categoryId = row.querySelector('select[name="category_id"]').value;
+
+            console.log('Image:', image);
+            console.log('Item Name:', itemname);
+            console.log('Price:', price);
+            console.log('Cost:', cost);
+            console.log('Category ID:', categoryId);
+            
+            // Gọi hàm saveItem và xử lý phản hồi
+            saveItem(itemId, image, itemname, price, cost, categoryId).then(data => {
+                if (!data.success) {
+                    console.error('Error updating item:', data.error);
+                    alert('Error: ' + data.error);
+                }
+                // Không cần làm gì thêm nếu thành công, vì saveItem sẽ reload trang
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error.message);
+            });
+        }
+    }
+    function saveItem(itemId, image, itemname, price, cost, categoryId) {
+        var formData = new FormData();
+        formData.append('action', 'edit');
+        formData.append('item_id', itemId);
+        formData.append('item-name', itemname);
+        formData.append('price', price);
+        formData.append('cost', cost);
+        formData.append('category_id', categoryId);
+        if (image) {
+        formData.append('image', image);
+        }
+
+
+        fetch('{{ url_for("menu.manage_item") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Raw response:', response);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Parsed response:', data);
+            if (data.success) {
+                console.log('Item updated successfully');
+                location.reload(); // Reload để hiển thị ảnh mới
+            } else {
+                console.error('Error updating item:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    function deleteItem(itemId) {
+        var formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('item_id', itemId);
+    
+        fetch('{{ url_for("menu.manage_item") }}', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                console.error('Error deleting item:', data.error);
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+// Hàm định dạng tiền tệ phía client
+function formatCurrency(value) {
+    return parseFloat(value).toLocaleString('vi-VN') + ' VND';
+}
+</script>
+<style>
+    .item-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}

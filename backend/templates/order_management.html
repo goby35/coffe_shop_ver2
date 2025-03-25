@@ -1,0 +1,266 @@
+{% extends 'home.html' %}
+{% block title %}Quản Lý Đặt Món{% endblock %}
+{% block content %}
+
+<!-- Thanh điều hướng -->
+<div class="nav-bar">
+    <div>
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" class="rounded-circle logo"> 
+        <strong>CAFFEFLOW</strong>
+    </div>
+    <h4 class="text-uppercase">Quản Lý Đặt Món</h4>
+    <div>
+        <button class="btn btn-outline-light">Tài Khoản</button>
+    </div>
+</div>
+
+<div class="container-fluid mt-5 pt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-6 sidebar">
+            <!-- Nút và bộ lọc trên cùng một hàng -->
+            <div class="d-flex align-items-center mb-3">
+                <button class="btn btn-primary me-2" id="show-tables">Danh sách bàn</button>
+                <button class="btn btn-primary me-2" id="show-menu">Thực đơn</button>
+                <div class="input-group filter-group ms-auto" style="max-width: 250px;">
+                    <input type="text" class="form-control" placeholder="Tìm kiếm" id="search-input">
+                    <button class="btn btn-outline-secondary" type="button" id="filter-btn">
+                        <i class="bi bi-filter"></i>
+                    </button>
+                    <!-- Dropdown bộ lọc (ẩn mặc định) -->
+                    <div class="dropdown-menu" id="filter-dropdown" style="display: none;">
+                        <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
+                        <a class="dropdown-item filter-option" href="#" data-value="available">Còn trống</a>
+                        <a class="dropdown-item filter-option" href="#" data-value="occupied">Đã đặt</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách bàn -->
+            <div class="d-flex flex-wrap mt-3 gap-3 tables-container">
+                {% for table in tables %}
+                <div class="table-card {% if table.status %}available{% else %}occupied{% endif %}" data-table-id="{{ table.id }}" data-table-name="{{ table.name }}">
+                    {{ table.name }}<br>{{ table.status | replace('True', 'Còn trống') | replace('False', 'Đã đặt') }}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Danh sách món (ẩn mặc định) -->
+            <div class="d-flex flex-wrap mt-3 gap-3 menu-container" style="display: none;">
+                {% for menu in menus %}
+                <div class="table-card {% if menu.type == 'food' %}food{% else %}drink{% endif %}" data-menu-id="{{ menu.id }}" data-menu-name="{{ menu.name }}">
+                    {{ menu.name }}<br>{{ menu.price }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Bootstrap Icons và jQuery -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    console.log("jQuery loaded:", typeof $ !== "undefined" ? "Yes" : "No");
+    console.log("$.get:", $.get);
+    console.log("$.ajax:", $.ajax);
+</script>
+<script>
+$(document).ready(function(){
+    console.log("Inside ready: $ =", typeof $); // Kiểm tra $ trong ready
+    let currentTab = "tables";
+
+    // Hiển thị danh sách bàn mặc định
+    $(".tables-container").show();
+    $(".menu-container").hide();
+
+    // Chuyển đổi tab
+    $("#show-tables").click(function(){
+        $(".tables-container").show();
+        $(".menu-container").hide();
+        currentTab = "tables";
+        updateFilterOptions();
+    });
+
+    $("#show-menu").click(function(){
+        $(".tables-container").hide();
+        $(".menu-container").show();
+        currentTab = "menu";
+        updateFilterOptions();
+    });
+
+    // Gắn sự kiện click cho bàn (hàm riêng để tái sử dụng)
+    function attachTableClick() {
+        $(".table-card").off("click").on("click", function(){ // Dùng .off để tránh trùng lặp sự kiện
+            var tableId = $(this).data("table-id");
+            var tableName = $(this).data("table-name");
+            if (currentTab === "tables" && tableId) {
+                $.ajax({
+                    url: "{{ url_for('order.create_order') }}",
+                    type: "POST",
+                    data: { id: tableId },
+                    success: function(response){
+                        alert("Đã tạo đơn hàng cho bàn: " + tableName + " (ID: " + response.order_id + ")");
+                    },
+                    error: function(xhr){
+                        alert("Lỗi: " + xhr.responseJSON.error);
+                    }
+                });
+            }
+        });
+    }
+
+    // Gọi lần đầu
+    attachTableClick();
+
+    // Hiển thị/ẩn dropdown bộ lọc
+    $("#filter-btn").click(function(e){
+        e.stopPropagation();
+        var dropdown = $("#filter-dropdown");
+        dropdown.css({
+            "top": $(this).outerHeight() + $(this).position().top,
+            "left": $(this).position().left
+        });
+        dropdown.toggle();
+    });
+
+    $(document).click(function(e){
+        if (!$(e.target).closest(".filter-group").length) {
+            $("#filter-dropdown").hide();
+        }
+    });
+
+    function updateFilterOptions() {
+        $("#filter-dropdown").empty();
+        if (currentTab === "tables") {
+            $("#filter-dropdown").append(`
+                <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
+                <a class="dropdown-item filter-option" href="#" data-value="available">Còn trống</a>
+                <a class="dropdown-item filter-option" href="#" data-value="occupied">Đã đặt</a>
+            `);
+        } else if (currentTab === "menu") {
+            $("#filter-dropdown").append(`
+                <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
+                <a class="dropdown-item filter-option" href="#" data-value="food">Món ăn</a>
+                <a class="dropdown-item filter-option" href="#" data-value="drink">Nước uống</a>
+            `);
+        }
+        $(".filter-option").click(function(e){
+            e.preventDefault();
+            var filter = $(this).data("value");
+            if (currentTab === "tables") {
+                filterTables(filter);
+            } else if (currentTab === "menu") {
+                filterItems(filter);
+            }
+            $("#filter-dropdown").hide();
+        });
+    }
+
+    function filterTables(filter) {
+        $.get("{{ url_for('order.filter_table') }}?table_filter=" + filter, function(data){
+            var tables = data.tables;
+            var html = '';
+            tables.forEach(function(table){
+                html += '<div class="table-card ' + (table.status ? 'available' : 'occupied') + '" data-table-id="' + table.id + '" data-table-name="' + table.name + '">' +
+                    table.name + '<br>' + (table.status ? 'Còn trống' : 'Đã đặt') +
+                    '</div>';
+            });
+            $(".tables-container").html(html);
+            attachTableClick(); // Gắn lại sự kiện sau khi cập nhật DOM
+        }).fail(function(xhr){
+            console.log("Lỗi khi lọc bàn: " + xhr.responseText); // Debug lỗi
+        });
+    }
+
+    function filterItems(filter) {
+        $.get("{{ url_for('order.filter_item') }}?filter_item=" + filter, function(data){
+            var menus = data.menus;
+            var html = '';
+            menus.forEach(function(menu){
+                html += '<div class="table-card ' + (menu.type === 'food' ? 'food' : 'drink') + '" data-menu-id="' + menu.id + '" data-menu-name="' + menu.name + '">' +
+                    menu.name + '<br>' + menu.price +
+                    '</div>';
+            });
+            $(".menu-container").html(html);
+        }).fail(function(xhr){
+            console.log("Lỗi khi lọc món: " + xhr.responseText); // Debug lỗi
+        });
+    }
+
+    $("#search-input").on("input", function(){
+        var searchValue = $(this).val().toLowerCase();
+        $(".table-card").each(function(){
+            var text = $(this).data("table-name") || $(this).data("menu-name");
+            if (text.toLowerCase().includes(searchValue)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    updateFilterOptions();
+});
+</script>
+
+<style>
+    .logo { width: 40px; height: 40px; }
+    .nav-bar {
+        background-color: #2F2F54;
+        padding: 10px 20px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+    }
+    .sidebar {
+        max-height: calc(100vh - 60px);
+        height: calc(100vh - 60px);
+        top: 60px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-right: 1px solid #dee2e6;
+        position: fixed;
+        min-height: 500px;
+    }
+    .table-card {
+        width: 150px;
+        height: 120px;
+        color: white;
+        font-weight: bold;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+    .table-card.available { background-color: #3498db; }
+    .table-card.occupied { background-color: #e74c3c; }
+    .table-card.green { background-color: #2ecc71; }
+    .table-card.food { background-color: #3498db; }
+    .table-card.drink { background-color: #e74c3c; }
+    .container-fluid { padding-top: 70px; }
+    .btn-primary { margin-right: 5px; }
+    #filter-dropdown { z-index: 1000; }
+    .filter-group { position: relative; max-width: 250px; } /* Thu nhỏ khung tìm kiếm */
+    #filter-btn { border-left: 0; }
+    .tables-container, .menu-container { gap: 15px !important; }
+    /* @media (max-width: 768px) {
+    .d-flex.align-items-center {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .filter-group {
+        margin-top: 10px;
+        width: 100%;
+    }
+} */
+</style>
+{% endblock %}
