@@ -1,266 +1,857 @@
 {% extends 'home.html' %}
 {% block title %}Quản Lý Đặt Món{% endblock %}
-{% block content %}
 
-<!-- Thanh điều hướng -->
+{% block styles %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: #2F2F54;
+    }
+
+    #app {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        padding: 20px;
+        gap: 20px;
+    }
+
+    /* Left panel */
+    .left-panel {
+        flex: 7;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Right panel */
+    .right-panel {
+        flex: 3;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        padding: 10px;
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #eee;
+        background: #f5f5f5;
+    }
+
+    .tab-group {
+        display: flex;
+        gap: 2px;
+    }
+
+    .tab-button {
+        padding: 8px 16px;
+        background: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        position: relative;
+    }
+
+    .tab-button.active {
+        background: #2F2F54;
+        color: white;
+    }
+
+    .tab-button .dropdown-icon {
+        margin-left: 5px;
+    }
+
+    .filter-select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 120px;
+        margin-left: 10px;
+    }
+
+    .search-box {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 8px 32px 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .search-box i {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+
+    /* Category tags */
+    .category-tags {
+        padding: 10px;
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .category-tag {
+        padding: 5px 10px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .category-tag.x::after {
+        content: "×";
+        margin-left: 5px;
+        cursor: pointer;
+    }
+
+    /* Content area */
+    .content-area {
+        flex: 1;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+        overflow-y: auto;
+    }
+
+    .menu-item {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .menu-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    .menu-item .name {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .menu-item .price {
+        color: #ff4444;
+        font-weight: 500;
+    }
+
+    /* Order section */
+    .order-header {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-id {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .order-id input {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 120px;
+        font-weight: bold;
+    }
+
+    .selected-items {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+    }
+
+    .selected-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-name {
+        margin-bottom: 5px;
+    }
+
+    .item-price {
+        color: #ff4444;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .quantity-controls button {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-item {
+        color: #ff4444;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 5px;
+    }
+
+    .order-footer {
+        padding: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .total-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .total-price .amount {
+        color: #ff4444;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background: #ff4444;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-checkout {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background: #4CAF50;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-checkout:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Table item styles */
+    .table-item {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.2s;
+        position: relative;
+    }
+
+    .table-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .table-item .status-icon {
+        font-size: 24px;
+        color: #4CAF50;
+    }
+
+    .table-item.reserved .status-icon {
+        color: #ff4444;
+    }
+
+    .table-item .name {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .table-item .status {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .table-item.reserved .status {
+        color: #ff4444;
+    }
+
+    .table-item .complete-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .table-item .complete-btn i {
+        font-size: 14px;
+    }
+
+    .table-item.reserved:hover .complete-btn {
+        opacity: 1;
+    }
+
+    .table-item .complete-btn:hover {
+        background: #45a049;
+    }
+
+    
+    .order-info {
+        margin-bottom: 15px;
+    }
+
+    .order-info h3 {
+        font-size: 18px;
+        margin: 0 0 10px 0;
+        text-align: center;
+    }
+
+    .order-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .order-items {
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        margin: 15px 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .item-details {
+        display: flex;
+        gap: 8px;
+    }
+
+    .modal-footer {
+        padding: 15px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .confirm-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .cancel-button {
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="nav-bar">
-    <div>
-        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" class="rounded-circle logo"> 
-        <strong>CAFFEFLOW</strong>
-    </div>
-    <h4 class="text-uppercase">Quản Lý Đặt Món</h4>
-    <div>
-        <button class="btn btn-outline-light">Tài Khoản</button>
+    <a href="{{ url_for('views.home') }}" class="brand">
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+        CAFFEFLOW
+    </a>
+    <h4 class="title">QUẢN LÝ ĐẶT MÓN</h4>
+    <div class="user-info">
+        <i class="bi bi-person-circle"></i>
+        <span>{{ user.name if user else 'Khách' }}</span>
     </div>
 </div>
 
-<div class="container-fluid mt-5 pt-3">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-6 sidebar">
-            <!-- Nút và bộ lọc trên cùng một hàng -->
-            <div class="d-flex align-items-center mb-3">
-                <button class="btn btn-primary me-2" id="show-tables">Danh sách bàn</button>
-                <button class="btn btn-primary me-2" id="show-menu">Thực đơn</button>
-                <div class="input-group filter-group ms-auto" style="max-width: 250px;">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm" id="search-input">
-                    <button class="btn btn-outline-secondary" type="button" id="filter-btn">
-                        <i class="bi bi-filter"></i>
+<div id="app">
+    <div class="left-panel">
+        <div class="toolbar">
+            <div class="tab-group">
+                <button class="tab-button" 
+                        :class="{ active: currentTab === 'tables' }"
+                        @click="currentTab = 'tables'">
+                    Phòng bàn
+                    <i class="bi bi-table"></i>
+                </button>
+                <button class="tab-button"
+                        :class="{ active: currentTab === 'menu' }"
+                        @click="currentTab = 'menu'">
+                    Thực đơn
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <select v-if="currentTab === 'tables'" 
+                    class="filter-select"
+                    v-model="tableFilter">
+                <option value="all">Tất cả</option>
+                <option value="available">Bàn trống</option>
+                <option value="reserved">Đã đặt</option>
+            </select>
+
+            <select v-if="currentTab === 'menu'"
+                    class="filter-select"
+                    v-model="menuFilter">
+                <option value="all">Tất cả</option>
+                <option value="food">Món ăn</option>
+                <option value="drink">Nước uống</option>
+            </select>
+
+            <div class="search-box">
+                <input type="text" 
+                       :placeholder="currentTab === 'tables' ? 'Tìm bàn...' : 'Tìm món...'" 
+                       v-model="searchQuery">
+                <i class="bi bi-search"></i>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- Hiển thị danh sách bàn -->
+            <template v-if="currentTab === 'tables'">
+                <div v-for="table in filteredTables" 
+                    :key="table.id" 
+                    class="table-item"
+                    :class="{ 'reserved': !table.status }"
+                    @click="selectTable(table)">
+                    <button v-if="!table.status" 
+                            class="complete-btn"
+                            @click.stop="completeOrder(table)">
+                        <i class="bi bi-check2-circle"></i>
+                        Đã giao món
                     </button>
-                    <!-- Dropdown bộ lọc (ẩn mặc định) -->
-                    <div class="dropdown-menu" id="filter-dropdown" style="display: none;">
-                        <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
-                        <a class="dropdown-item filter-option" href="#" data-value="available">Còn trống</a>
-                        <a class="dropdown-item filter-option" href="#" data-value="occupied">Đã đặt</a>
-                    </div>
+                    <i class="bi bi-record-circle status-icon"></i>
+                    <div class="name">[[ table.name ]]</div>
+                    <div class="status">[[ table.status ? 'Trống' : 'Đã đặt' ]]</div>
+                </div>
+            </template>
+
+            <!-- Hiển thị danh sách món -->
+            <template v-else>
+                <div v-for="menu in filteredMenus" 
+                     :key="menu.id" 
+                     class="menu-item"
+                     @click="addMenuItem(menu)">
+                    <img :src="menu.image_url || '{{ url_for('static', filename='images/default-menu.png') }}'" 
+                         :alt="menu.name">
+                    <div class="name">[[ menu.name ]]</div>
+                    <div class="price">[[ menu.price.toLocaleString() ]]đ</div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="order-header">
+            <div class="order-id">
+                <input type="text" id="tableCode" placeholder="Bàn XX" readonly>
+                <span id="orderId"></span>
+            </div>
+        </div>
+
+        <div class="selected-items" id="selectedItems">
+            <div v-for="(count, itemId) in selectedItems" 
+                 :key="itemId" 
+                 class="selected-item">
+                <div class="item-info">
+                    <div class="item-name">[[ getMenuName(itemId) ]]</div>
+                    <div class="item-price">[[ getMenuPrice(itemId).toLocaleString() ]]đ</div>
+                </div>
+                <div class="quantity-controls">
+                    <button @click="decreaseQuantity(itemId)">-</button>
+                    <span>[[ count ]]</span>
+                    <button @click="increaseQuantity(itemId)">+</button>
+                    <button class="remove-item" @click="removeItem(itemId)">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
-
-            <!-- Danh sách bàn -->
-            <div class="d-flex flex-wrap mt-3 gap-3 tables-container">
-                {% for table in tables %}
-                <div class="table-card {% if table.status %}available{% else %}occupied{% endif %}" data-table-id="{{ table.id }}" data-table-name="{{ table.name }}">
-                    {{ table.name }}<br>{{ table.status | replace('True', 'Còn trống') | replace('False', 'Đã đặt') }}
-                </div>
-                {% endfor %}
+            <div v-if="!hasOrderItems" class="no-items">
+                Chưa có món nào được chọn
             </div>
+        </div>
 
-            <!-- Danh sách món (ẩn mặc định) -->
-            <div class="d-flex flex-wrap mt-3 gap-3 menu-container" style="display: none;">
-                {% for menu in menus %}
-                <div class="table-card {% if menu.type == 'food' %}food{% else %}drink{% endif %}" data-menu-id="{{ menu.id }}" data-menu-name="{{ menu.name }}">
-                    {{ menu.name }}<br>{{ menu.price }}
-                </div>
-                {% endfor %}
+        <div class="order-footer">
+            <div class="total-price">
+                <span>TỔNG TIỀN:</span>
+                <span class="amount">[[ formatPrice(totalPrice) ]]</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-cancel" id="resetOrderBtn" @click="resetOrder(true)">HỦY ĐƠN</button>
+                <button class="btn-checkout" id="checkoutBtn" 
+                        :disabled="!canCheckout"
+                        @click="checkout">THANH TOÁN</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Thêm Bootstrap Icons và jQuery -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script>
-    console.log("jQuery loaded:", typeof $ !== "undefined" ? "Yes" : "No");
-    console.log("$.get:", $.get);
-    console.log("$.ajax:", $.ajax);
-</script>
-<script>
-$(document).ready(function(){
-    console.log("Inside ready: $ =", typeof $); // Kiểm tra $ trong ready
-    let currentTab = "tables";
+    const app = Vue.createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                currentTab: 'tables',
+                searchQuery: '',
+                tableFilter: 'all',
+                menuFilter: 'all',
+                tables: JSON.parse('{{ tables | tojson | safe }}'),
+                menus: JSON.parse('{{ menus | tojson | safe }}'),
+                selectedTable: null,
+                selectedItems: {},
+                currentUser: JSON.parse('{{ user | tojson | safe }}'),
+                tableCode: '',
+                orderId: '',
+                completedOrders: [],
+                orderCountToday: 0,
+                orderItems: [],
+                totalAmount: 0
+            }
+        },
+        computed: {
+            filteredTables() {
+                let filtered = this.tables;
+                if (this.tableFilter === 'available') {
+                    filtered = filtered.filter(table => table.status);
+                } else if (this.tableFilter === 'reserved') {
+                    filtered = filtered.filter(table => !table.status);
+                }
+                if (this.searchQuery) {
+                    const query = this.searchQuery.toLowerCase();
+                    filtered = filtered.filter(table => 
+                        table.name.toLowerCase().includes(query)
+                    );
+                }
+                return filtered;
+            },
+            filteredMenus() {
+                let filtered = this.menus;
+                if (this.menuFilter === 'food') {
+                    filtered = filtered.filter(menu => menu.category_id === 1);
+                } else if (this.menuFilter === 'drink') {
+                    filtered = filtered.filter(menu => menu.category_id === 2);
+                }
+                if (this.searchQuery) {
+                    const query = this.searchQuery.toLowerCase();
+                    filtered = filtered.filter(menu =>
+                        menu.name.toLowerCase().includes(query)
+                    );
+                }
+                return filtered;
+            },
+            totalPrice() {
+                return Object.entries(this.selectedItems).reduce((total, [itemId, count]) => {
+                    const menu = this.menus.find(m => m.id === parseInt(itemId));
+                    return total + (menu ? menu.price * count : 0);
+                }, 0);
+            },
+            hasOrderItems() {
+                return Object.keys(this.selectedItems).length > 0;
+            },
+            canCheckout() {
+                return this.tableCode && this.hasOrderItems;
+            }
+        },
+        methods: {
+            selectTable(table) {
+                fetch(`/api/orders/table/${table.name}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Bàn đã có đơn hàng
+                            alert(`Bàn này đã được đặt! Mã đơn hàng: ${data.order.id}`);
+                        } else {
+                            // Bàn trống, cho phép chọn
+                            this.selectedTable = table;
+                            this.tableCode = 'Bàn ' + table.name;
+                            this.orderId = '';
+                            this.selectedItems = {};
+                            document.getElementById('tableCode').value = 'Bàn ' + table.name;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi kiểm tra trạng thái bàn:', error);
+                        alert('Không thể kiểm tra trạng thái bàn. Vui lòng thử lại sau.');
+                    });
+            },
+            addMenuItem(menu) {
+                if (!this.selectedTable) {
+                    alert('Vui lòng chọn bàn trước khi thêm món!');
+                    return;
+                }
+                const itemId = menu.id.toString();
+                const newItems = { ...this.selectedItems };
+                newItems[itemId] = (newItems[itemId] || 0) + 1;
+                this.selectedItems = newItems; // Kích hoạt phản ứng
+            },
+            getMenuName(itemId) {
+                const menu = this.menus.find(m => m.id === parseInt(itemId));
+                return menu ? menu.name : '';
+            },
+            getMenuPrice(itemId) {
+                const menu = this.menus.find(m => m.id === parseInt(itemId));
+                return menu ? menu.price : 0;
+            },
+            increaseQuantity(itemId) {
+                if (this.selectedItems[itemId]) {
+                    this.selectedItems[itemId]++;
+                }
+            },
+            decreaseQuantity(itemId) {
+                if (this.selectedItems[itemId] > 1) {
+                    this.selectedItems[itemId]--;
+                } else {
+                    this.removeItem(itemId);
+                }
+            },
+            removeItem(itemId) {
+                const newItems = {...this.selectedItems};
+                delete newItems[itemId];
+                this.selectedItems = newItems;
+            },
+            resetOrder(isManual = false) {
+                if (isManual && !confirm('Bạn có chắc muốn xóa đơn hàng này?')) {
+                    return; // Chỉ yêu cầu xác nhận khi hủy thủ công
+                }
+                this.selectedTable = null;
+                this.selectedItems = {};
+                this.tableCode = '';
+                this.orderId = '';
+                this.showPaymentModal = false;
+                // Cập nhật giao diện
+                const tableCodeInput = document.getElementById('tableCode');
+                if (tableCodeInput) tableCodeInput.value = '';
+                const orderIdSpan = document.getElementById('orderId');
+                if (orderIdSpan) orderIdSpan.textContent = '';
+            },
+            checkout() {
+                if (!this.canCheckout) {
+                    alert('Vui lòng chọn bàn và thêm món vào đơn hàng!');
+                    return;
+                }
+                
+                const orderData = {
+                    table_id: this.selectedTable.id,
+                    user_id: this.currentUser.id,
+                    total_amount: this.totalPrice,
+                    order_time: new Date().toISOString(),
+                    status: 'pending',
+                    items: Object.entries(this.selectedItems).map(([itemId, quantity]) => ({
+                        item_id: parseInt(itemId),
+                        count: quantity,
+                        price: this.getMenuPrice(parseInt(itemId))
+                    }))
+                };
 
-    // Hiển thị danh sách bàn mặc định
-    $(".tables-container").show();
-    $(".menu-container").hide();
-
-    // Chuyển đổi tab
-    $("#show-tables").click(function(){
-        $(".tables-container").show();
-        $(".menu-container").hide();
-        currentTab = "tables";
-        updateFilterOptions();
-    });
-
-    $("#show-menu").click(function(){
-        $(".tables-container").hide();
-        $(".menu-container").show();
-        currentTab = "menu";
-        updateFilterOptions();
-    });
-
-    // Gắn sự kiện click cho bàn (hàm riêng để tái sử dụng)
-    function attachTableClick() {
-        $(".table-card").off("click").on("click", function(){ // Dùng .off để tránh trùng lặp sự kiện
-            var tableId = $(this).data("table-id");
-            var tableName = $(this).data("table-name");
-            if (currentTab === "tables" && tableId) {
-                $.ajax({
-                    url: "{{ url_for('order.create_order') }}",
-                    type: "POST",
-                    data: { id: tableId },
-                    success: function(response){
-                        alert("Đã tạo đơn hàng cho bàn: " + tableName + " (ID: " + response.order_id + ")");
+                fetch('/create_order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     },
-                    error: function(xhr){
-                        alert("Lỗi: " + xhr.responseJSON.error);
+                    body: JSON.stringify(orderData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Cập nhật trạng thái bàn
+                        const tableIndex = this.tables.findIndex(t => t.id === this.selectedTable.id);
+                        if (tableIndex !== -1) {
+                            this.tables[tableIndex].status = false; // Đánh dấu bàn là đã đặt
+                        }
+
+                        // Reset đơn hàng
+                        this.resetOrder(); // Gọi reset mà không yêu cầu xác nhận
+
+                        alert('Thanh toán thành công!');
+                    } else {
+                        alert(data.error || 'Có lỗi xảy ra khi thanh toán!');
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi thanh toán!');
                 });
+            },
+            completeOrder(table) {
+                // Kiểm tra đơn hàng thông qua API
+                fetch(`/api/orders/table/${table.name}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success || !data.order) {
+                            alert('Không tìm thấy đơn hàng cho bàn này!');
+                            return;
+                        }
+
+                        if (confirm('Xác nhận đã giao món cho ' + table.name + '?')) {
+                            fetch('/complete_order', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    order_id: data.order.id,
+                                    finish_time: new Date().toISOString(),
+                                    status: 'completed'
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Cập nhật trạng thái bàn
+                                    const tableIndex = this.tables.findIndex(t => t.id === table.id);
+                                    if (tableIndex !== -1) {
+                                        this.tables[tableIndex].status = true;
+                                        this.tables[tableIndex].orderId = null;
+                                    }
+
+                                    // Xóa khỏi danh sách đơn hàng hoàn thành (nếu có)
+                                    const orderIndex = this.completedOrders.findIndex(o => o.id === data.order.id);
+                                    if (orderIndex !== -1) {
+                                        this.completedOrders.splice(orderIndex, 1);
+                                    }
+
+                                    alert('Đã hoàn thành đơn hàng cho ' + table.name + '!');
+                                } else {
+                                    alert(data.error || 'Có lỗi xảy ra khi hoàn thành đơn hàng!');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Có lỗi xảy ra khi hoàn thành đơn hàng!');
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi kiểm tra đơn hàng!');
+                    });
+            },
+            addNewOrder() {
+                this.orderId = this.generateOrderId();
+                this.resetOrder();
+            },
+            generateOrderId() {
+                this.orderCountToday++;
+                
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                
+                const orderNumber = String(this.orderCountToday).padStart(3, '0');
+                
+                return `${day}${month}${year}-${orderNumber}`;
+            },
+            resetOrderCountIfNewDay() {
+                const lastOrder = this.completedOrders[this.completedOrders.length - 1];
+                if (lastOrder) {
+                    const lastOrderDate = new Date(lastOrder.order_time);
+                    const today = new Date();
+                    
+                    if (lastOrderDate.getDate() !== today.getDate() ||
+                        lastOrderDate.getMonth() !== today.getMonth() ||
+                        lastOrderDate.getFullYear() !== today.getFullYear()) {
+                        this.orderCountToday = 0;
+                    }
+                }
+            },
+            getCurrentDateTime() {
+                const now = new Date();
+                const options = { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return now.toLocaleString('vi-VN', options);
+            },
+            formatPrice(price) {
+                return price.toLocaleString('vi-VN') + 'đ';
             }
-        });
-    }
-
-    // Gọi lần đầu
-    attachTableClick();
-
-    // Hiển thị/ẩn dropdown bộ lọc
-    $("#filter-btn").click(function(e){
-        e.stopPropagation();
-        var dropdown = $("#filter-dropdown");
-        dropdown.css({
-            "top": $(this).outerHeight() + $(this).position().top,
-            "left": $(this).position().left
-        });
-        dropdown.toggle();
-    });
-
-    $(document).click(function(e){
-        if (!$(e.target).closest(".filter-group").length) {
-            $("#filter-dropdown").hide();
         }
     });
 
-    function updateFilterOptions() {
-        $("#filter-dropdown").empty();
-        if (currentTab === "tables") {
-            $("#filter-dropdown").append(`
-                <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
-                <a class="dropdown-item filter-option" href="#" data-value="available">Còn trống</a>
-                <a class="dropdown-item filter-option" href="#" data-value="occupied">Đã đặt</a>
-            `);
-        } else if (currentTab === "menu") {
-            $("#filter-dropdown").append(`
-                <a class="dropdown-item filter-option" href="#" data-value="all">Tất cả</a>
-                <a class="dropdown-item filter-option" href="#" data-value="food">Món ăn</a>
-                <a class="dropdown-item filter-option" href="#" data-value="drink">Nước uống</a>
-            `);
-        }
-        $(".filter-option").click(function(e){
-            e.preventDefault();
-            var filter = $(this).data("value");
-            if (currentTab === "tables") {
-                filterTables(filter);
-            } else if (currentTab === "menu") {
-                filterItems(filter);
-            }
-            $("#filter-dropdown").hide();
-        });
-    }
-
-    function filterTables(filter) {
-        $.get("{{ url_for('order.filter_table') }}?table_filter=" + filter, function(data){
-            var tables = data.tables;
-            var html = '';
-            tables.forEach(function(table){
-                html += '<div class="table-card ' + (table.status ? 'available' : 'occupied') + '" data-table-id="' + table.id + '" data-table-name="' + table.name + '">' +
-                    table.name + '<br>' + (table.status ? 'Còn trống' : 'Đã đặt') +
-                    '</div>';
-            });
-            $(".tables-container").html(html);
-            attachTableClick(); // Gắn lại sự kiện sau khi cập nhật DOM
-        }).fail(function(xhr){
-            console.log("Lỗi khi lọc bàn: " + xhr.responseText); // Debug lỗi
-        });
-    }
-
-    function filterItems(filter) {
-        $.get("{{ url_for('order.filter_item') }}?filter_item=" + filter, function(data){
-            var menus = data.menus;
-            var html = '';
-            menus.forEach(function(menu){
-                html += '<div class="table-card ' + (menu.type === 'food' ? 'food' : 'drink') + '" data-menu-id="' + menu.id + '" data-menu-name="' + menu.name + '">' +
-                    menu.name + '<br>' + menu.price +
-                    '</div>';
-            });
-            $(".menu-container").html(html);
-        }).fail(function(xhr){
-            console.log("Lỗi khi lọc món: " + xhr.responseText); // Debug lỗi
-        });
-    }
-
-    $("#search-input").on("input", function(){
-        var searchValue = $(this).val().toLowerCase();
-        $(".table-card").each(function(){
-            var text = $(this).data("table-name") || $(this).data("menu-name");
-            if (text.toLowerCase().includes(searchValue)) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    });
-
-    updateFilterOptions();
-});
+    // Mount Vue app
+    app.mount('#app');
 </script>
-
-<style>
-    .logo { width: 40px; height: 40px; }
-    .nav-bar {
-        background-color: #2F2F54;
-        padding: 10px 20px;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: fixed;
-        width: 100%;
-        top: 0;
-        z-index: 1000;
-    }
-    .sidebar {
-        max-height: calc(100vh - 60px);
-        height: calc(100vh - 60px);
-        top: 60px;
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-right: 1px solid #dee2e6;
-        position: fixed;
-        min-height: 500px;
-    }
-    .table-card {
-        width: 150px;
-        height: 120px;
-        color: white;
-        font-weight: bold;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-    }
-    .table-card.available { background-color: #3498db; }
-    .table-card.occupied { background-color: #e74c3c; }
-    .table-card.green { background-color: #2ecc71; }
-    .table-card.food { background-color: #3498db; }
-    .table-card.drink { background-color: #e74c3c; }
-    .container-fluid { padding-top: 70px; }
-    .btn-primary { margin-right: 5px; }
-    #filter-dropdown { z-index: 1000; }
-    .filter-group { position: relative; max-width: 250px; } /* Thu nhỏ khung tìm kiếm */
-    #filter-btn { border-left: 0; }
-    .tables-container, .menu-container { gap: 15px !important; }
-    /* @media (max-width: 768px) {
-    .d-flex.align-items-center {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .filter-group {
-        margin-top: 10px;
-        width: 100%;
-    }
-} */
-</style>
 {% endblock %}

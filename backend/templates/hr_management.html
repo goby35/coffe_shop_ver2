@@ -1,44 +1,35 @@
 {% extends "base.html" %}
-{% block title %}HR Management{% endblock %}
+
+{% block title %}Quản lý nhân viên{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">
-                            <span data-feather="home"></span>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/hr_management">
-                            <span data-feather="users"></span>
-                            Quản lý HR
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/menu_items">
-                            <span data-feather="file"></span>
-                            Quản lý Menu
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="bar-chart-2"></span>
-                            Quản lý Doanh thu
-                        </a>
-                    </li>
-                </ul>
+        <!-- Dashboard bên trái -->
+        <div class="col-md-2 bg-light p-3">
+            <div class="d-flex flex-column">
+                <a href="{{ url_for('auth.hr_management') }}" class="btn btn-outline-primary mb-2">
+                    <i class="fas fa-users me-2"></i>Quản lý nhân viên
+                </a>
+                <a href="{{ url_for('material.materials_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-box me-2"></i>Quản lý nguyên liệu
+                </a>
+                <a href="{{ url_for('menu.menu_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-utensils me-2"></i>Quản lý menu
+                </a>
+                <a href="{{ url_for('table.manage_tables') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-chair me-2"></i>Quản lý bàn
+                </a>
+                <a href="{{ url_for('report.report_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                </a>
             </div>
-        </nav>
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard</h1>
-            </div>
-            <div class="container">
-                <h1>Danh sách user</h1>
+        </div>
+
+        <!-- Nội dung chính -->
+        <div class="col-md-10">
+            <div class="container mt-4">
+                <h2>Quản lý nhân viên</h2>
                 <form method="post" action="{{ url_for('auth.hr_management') }}">
                     <input type="hidden" name="action" value="create">
                     <div class="form-group">
@@ -46,22 +37,22 @@
                         <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
                     </div>
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                        <label for="name">Tên người dùng</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter username" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
+                        <label for="password">Mật khẩu</label>
                         <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
                     </div>
                     <div class="form-group">
-                        <label for="confirm_password">Confirm Password</label>
+                        <label for="confirm_password">Xác nhận mật khẩu</label>
                         <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
                     </div>
                     <div class="form-group">
                         <input type="checkbox" id="is_admin" name="is_admin">
                         <label for="is_admin">Admin</label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Create User</button>
+                    <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
                 </form>
                 <hr>
                 <h2>Users</h2>
@@ -69,10 +60,10 @@
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Username</th>
+                            <th>Tên người dùng</th>
                             <th>Email</th>
                             <th>Admin</th>
-                            <th>Actions</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,8 +72,8 @@
                             <tr>
                                 <td>{{ loop.index }}</td>
                                 <td>
-                                    <span class="user-info"> {{ user.username }}</span>
-                                    <input type="text" class="form-control user-edit" name="username" value="{{ user.username }}" style="display: none;">
+                                    <span class="user-info"> {{ user.name }}</span>
+                                    <input type="text" class="form-control user-edit" name="name" value="{{ user.name }}" style="display: none;">
                                 </td>
                                 <td>
                                     <span class="user-info"> {{ user.email }}</span>
@@ -104,7 +95,7 @@
                     </tbody>
                 </table>
             </div>
-        </main>
+        </div>
     </div>
 </div>
 
@@ -120,13 +111,13 @@ function editUser(button, userId) {
         inputs.forEach(input => input.style.display = 'block');
         editBtn.textContent = 'Save';
     } else {
-        var username = row.querySelector('input[name="username"]').value;
+        var name = row.querySelector('input[name="name"]').value;
         var email = row.querySelector('input[name="email"]').value;
         var isAdmin = row.querySelector('input[name="is_admin"]').checked;
 
-        saveUser(userId, username, email, isAdmin);
+        saveUser(userId, name, email, isAdmin);
 
-        spans[0].textContent = username;
+        spans[0].textContent = name;
         spans[1].textContent = email;
         spans[2].textContent = isAdmin ? 'Yes' : 'No';
 
@@ -136,11 +127,11 @@ function editUser(button, userId) {
     }
 }
 
-function saveUser(userId, username, email, isAdmin) {
+function saveUser(userId, name, email, isAdmin) {
     var formData = new FormData();
     formData.append('action', 'edit');
     formData.append('user_id', userId);
-    formData.append('username', username);
+    formData.append('name', name);
     formData.append('email', email);
     formData.append('is_admin', isAdmin ? 'on' : 'off');
 

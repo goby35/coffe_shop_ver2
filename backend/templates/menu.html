@@ -1,131 +1,178 @@
 {% extends "base.html" %}
-{% block title %} Menu {% endblock %}
+{% block title %} Quản Lý Thực Đơn {% endblock %}
+
+{% block head %}
+<!-- Thêm Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-3">
-            <div class="sidebar">
-                <h3>Search</h3>
-                <form method="GET" action="{{ url_for('menu.manage_item') }}">
-                    <input type="text" name="search" placeholder="Search..." class="form-control">
-                    <button type="submit" class="btn btn-primary mt-2">Search</button>
-                </form>
-                <h3 class="mt-4">Categories
-                    <button type="button" class="btn btn-outline-secondary btn-sm ml-2" onclick="toggleCategoryInput()">+</button>
-                </h3>
-                <div id="category-input" style="display: none;">
-                    <form method="post" action="{{ url_for('menu.manage_category') }}" onsubmit="return handleCategorySubmit(event)">
-                        <input type="hidden" name="action" value="create">
-                        <div class="form-group">
-                            <label for="category-name">Category name</label>
-                            <input type="text" class="form-control" id="category-name" name="name" required>
-                        </div>
-                    </form>
-                </div>
-                <ul class="list-group mt-2">
-                    {% for category in category %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="{{ url_for('menu.manage_category', id=category.id) }}">{{ category.name }}</a>
-                        <form method="post" action="{{ url_for('menu.manage_category') }}" onsubmit="return confirm('Are you sure you want to delete this category?');">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="{{ category.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm">x</button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
+        <!-- Dashboard bên trái -->
+        <div class="col-md-2 bg-light p-3">
+            <div class="d-flex flex-column">
+                <a href="{{ url_for('auth.hr_management') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-users me-2"></i>Quản lý nhân viên
+                </a>
+                <a href="{{ url_for('material.materials_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-box me-2"></i>Quản lý nguyên liệu
+                </a>
+                <a href="{{ url_for('menu.menu_page') }}" class="btn btn-outline-primary mb-2">
+                    <i class="fas fa-utensils me-2"></i>Quản lý menu
+                </a>
+                <a href="{{ url_for('table.manage_tables') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-chair me-2"></i>Quản lý bàn
+                </a>
+                <a href="{{ url_for('report.report_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                </a>
             </div>
         </div>
-        <div class="col-md-9">
-            <h1>ADD ITEM</h1>
-            <form method="post" action="{{ url_for('menu.manage_item') }}" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="create">
-                <div class="form-group">
-                    <label for="item-name">Item name</label>
-                    <input type="text" class="form-control" id="item-name" name="item-name" placeholder="Enter item name" required>
-                </div>
-                <div class="form-group">
-                    <label for="price">Price</label>
-                    <input type="number" class="form-control" id="price" name="price" placeholder="Enter price" required>
-                </div>
-                <div class="form-group">
-                    <label for="cost">Cost</label>
-                    <input type="number" class="form-control" id="cost" name="cost" placeholder="Enter cost" required>
-                </div>
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select class="form-control" id="category" name="category_id" required>
-                        {% for category in category %}
-                            <option value="{{ category.id }}">{{ category.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="image">Image</label>
-                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                </div>
-                <br>
-                <button type="submit" class="btn btn-primary">Create Item</button>
-            </form>
-            <table class="table table-striped mt-4">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Cost</th>
-                        <th>Category</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in item %}
-                        <tr>
-                            <td>
-                                <span class="item-info">
-                                    {% if item.image_url %}
-                                        <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 50px; height: 50px; object-fit: cover;">
-                                    {% else %}
-                                        No image
-                                    {% endif %}
-                                </span>
-                                <input type="file" class="form-control item-edit" name="image" style="display: none;" accept="image/*">
-                            </td>
-                            <td>
-                                <span class="item-info">{{ item.name }}</span>
-                                <input type="text" class="form-control item-edit" name="item-name" value="{{ item.name }}" style="display: none;">
-                            </td>
-                            <td>
-                                <span class="item-info">{{ format_currency(item.price) }}</span>
-                                <input type="number" class="form-control item-edit" name="price" value="{{ item.price }}" style="display: none;">
-                            </td>
-                            <td>
-                                <span class="item-info">{{ format_currency(item.cost) }}</span>
-                                <input type="number" class="form-control item-edit" name="cost" value="{{ item.cost }}" style="display: none;">
-                                
-                            </td>
-                            <td>
-                                <span class="item-info">{{ item.category.name }}</span>
-                                <select class="form-control item-edit" name="category_id" style="display: none;">
-                                    {% for category in category %}
-                                    <option value="{{ category.id }}" {% if category.id == item.category_id %}selected{% endif %}>{{ category.name }}</option>
+
+        <!-- Nội dung chính -->
+        <div class="col-md-10">
+            <div class="container mt-4">
+                <h2>Quản Lý Menu</h2>
+                <div class="row">
+                    <!-- Sidebar -->
+                    <div class="col-md-3">
+                        <div class="sidebar">
+                            <h3>Tìm kiếm</h3>
+                            <form method="GET" action="{{ url_for('menu.manage_item') }}">
+                                <input type="text" name="search" placeholder="Tìm kiếm..." class="form-control">
+                                <button type="submit" class="btn btn-primary mt-2">Tìm</button>
+                            </form>
+
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3>Danh mục</h3>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="toggleCategoryInput()">
+                                        <i class="fas fa-plus"></i> Thêm
+                                    </button>
+                                </div>
+                                <div id="category-input" style="display: none;" class="mt-2">
+                                    <form method="POST" action="{{ url_for('menu.manage_category') }}" onsubmit="return handleCategorySubmit(event)">
+                                        <input type="hidden" name="action" value="add">
+                                        <div class="form-group">
+                                            <label for="category-name">Tên danh mục</label>
+                                            <input type="text" class="form-control" id="category-name" name="name" placeholder="Tên danh mục" required>
+                                        </div>
+                                    </form>
+                                </div>
+                                <ul class="list-group mt-2" id="categoryList">
+                                    {% for category in categories %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('menu.manage_category', id=category.id) }}">{{ category.name }}</a>
+                                        <form method="post" action="{{ url_for('menu.manage_category') }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="category_id" value="{{ category.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">x</button>
+                                        </form>
+                                    </li>
                                     {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <button class="btn btn-warning edit-btn" onclick="editItem(this, '{{ item.id }}')">Edit</button>
-                                <button class="btn btn-danger" onclick="deleteItem('{{ item.id }}')">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung chính -->
+                    <div class="col-md-9">
+                        <h1>Thêm món mới</h1>
+                        <form id="addItemForm" method="post" action="{{ url_for('menu.manage_item') }}" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="add">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="item-name">Tên món</label>
+                                        <input type="text" class="form-control" id="item-name" name="name" placeholder="Nhập tên món" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="category">Danh mục</label>
+                                        <select class="form-control" id="category" name="category_id" required>
+                                            {% for category in categories %}
+                                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="price">Giá bán</label>
+                                        <input type="number" class="form-control" id="price" name="price" placeholder="Nhập giá bán" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="image">Hình ảnh</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            </div>
+                            <br>
+                            <button type="submit" class="btn btn-primary">Thêm món</button>
+                        </form>
+
+                        <table class="table table-striped mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Hình ảnh</th>
+                                    <th>Tên món</th>
+                                    <th>Giá bán</th>
+                                    <th>Ngày cập nhật</th>
+                                    <th>Danh mục</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item_data in items %}
+                                    <tr data-item-id="{{ item_data.item.id }}">
+                                        <td>
+                                            <span class="item-info">
+                                                {% if item_data.item.image_url %}
+                                                    <img src="{{ item_data.item.image_url }}" alt="{{ item_data.item.name }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% else %}
+                                                    <img src="{{ url_for('static', filename='images/no-image.png') }}" alt="No image" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="item-info">{{ item_data.item.name }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="item-info" data-price="{{ item_data.latest_price.price if item_data.latest_price else 0 }}">
+                                                {% if item_data.latest_price %}
+                                                    {{ formatCurrency(item_data.latest_price.price) }}
+                                                {% else %}
+                                                    Chưa có giá
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="item-info">{{ item_data.latest_price.updated_date.strftime('%d/%m/%Y %H:%M') }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="item-info">{{ item_data.item.category.name }}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-warning edit-btn" onclick="editItem(this, '{{ item_data.item.id }}')">Sửa</button>
+                                            <button class="btn btn-danger" onclick="deleteItem('{{ item_data.item.id }}')">Xóa</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>  
+</div>
 
 <script>
+// Hàm toggle form thêm danh mục
 function toggleCategoryInput() {
     var categoryInput = document.getElementById('category-input');
     if (categoryInput.style.display === 'none' || categoryInput.style.display === '') {
@@ -135,6 +182,7 @@ function toggleCategoryInput() {
     }
 }
 
+// Xử lý submit form thêm danh mục
 function handleCategorySubmit(event) {
     event.preventDefault();
     var form = event.target;
@@ -143,110 +191,209 @@ function handleCategorySubmit(event) {
         form.submit();
     }
 }
-</script>
 
-<!-- Edit, delete Item -->
-<script>
-    function editItem(button, itemId) {
-        var row = button.closest('tr');
-        var spans = row.querySelectorAll('.item-info');
-        var inputs = row.querySelectorAll('.item-edit');
-        var editBtn = row.querySelector('.edit-btn');
+// Hàm sửa món
+// function editItem(button, itemId) {
+//     var row = button.closest('tr');
+//     var priceCell = row.cells[2]; // Lấy ô chứa giá
+//     var editBtn = row.querySelector('.edit-btn');
     
-        if (editBtn.textContent === 'Edit') {
-            spans.forEach(span => span.style.display = 'none');
-            inputs.forEach(input => input.style.display = 'block');
-            editBtn.textContent = 'Save';
+//     if (editBtn.textContent === 'Sửa') {
+//         // Lấy giá hiện tại
+//         var currentPrice = priceCell.querySelector('.item-info').textContent.trim().replace(/[^0-9]/g, '');
+        
+//         // Tạo input để nhập giá mới
+//         var priceInput = document.createElement('input');
+//         priceInput.type = 'number';
+//         priceInput.className = 'form-control';
+//         priceInput.value = currentPrice;
+//         priceInput.style.width = '100px';
+        
+//         // Ẩn giá hiện tại và hiện input
+//         priceCell.querySelector('.item-info').style.display = 'none';
+//         priceCell.appendChild(priceInput);
+//         editBtn.textContent = 'Lưu';
+//     } else {
+//         // Lấy giá mới
+//         var newPrice = priceCell.querySelector('input').value;
+//         if (!newPrice || isNaN(newPrice) || newPrice <= 0) {
+//             alert('Vui lòng nhập giá hợp lệ!');
+//             return;
+//         }
+//         // Gọi hàm saveItem và xử lý phản hồi
+//         saveItem(itemId, newPrice).then(data => {
+//             if (data.success) {
+//                 alert('Cập nhật giá thành công!');
+//                 location.reload();
+//             } else {
+//                 alert('Lỗi: ' + data.error);
+//             }
+//         }).catch(error => {
+//             alert('Có lỗi xảy ra: ' + error.message);
+//         });
+//     }
+// }
+
+// function saveItem(itemId, price) {
+//     var formData = new FormData();
+//     formData.append('action', 'update');
+//     formData.append('item_id', itemId);
+//     formData.append('price', price);
+
+//     return fetch('{{ url_for("menu.manage_item") }}', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             // Cập nhật giao diện thay vì reload
+//             var row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+//             if (row) {
+//                 var priceCell = row.cells[2];
+//                 priceCell.querySelector('.item-info').textContent = formatCurrency(price);
+//                 priceCell.querySelector('.item-info').style.display = 'block';
+//                 priceCell.querySelector('input').remove();
+//                 row.querySelector('.edit-btn').textContent = 'Sửa';
+//             }
+//             alert('Cập nhật giá thành công!');
+//         } else {
+//             alert('Lỗi: ' + data.error);
+//         }
+//         return data;
+//     })
+//     .catch(error => {
+//         console.error('Fetch error:', error);
+//         throw error;
+//     });
+// }
+
+// Hàm xóa món
+function deleteItem(itemId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa món này?')) {
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('action', 'delete');
+    formData.append('item_id', itemId);
+    
+    fetch('{{ url_for("menu.manage_item") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Xóa hàng khỏi bảng
+            var row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+            if (row) {
+                row.remove();
+            }
+            alert('Đã xóa món thành công!');
         } else {
-            var image = row.querySelector('input[name="image"]').files[0];
-            var itemname = row.querySelector('input[name="item-name"]').value;
-            var price = row.querySelector('input[name="price"]').value;
-            var cost = row.querySelector('input[name="cost"]').value;
-            var categoryId = row.querySelector('select[name="category_id"]').value;
-
-            console.log('Image:', image);
-            console.log('Item Name:', itemname);
-            console.log('Price:', price);
-            console.log('Cost:', cost);
-            console.log('Category ID:', categoryId);
-            
-            // Gọi hàm saveItem và xử lý phản hồi
-            saveItem(itemId, image, itemname, price, cost, categoryId).then(data => {
-                if (!data.success) {
-                    console.error('Error updating item:', data.error);
-                    alert('Error: ' + data.error);
-                }
-                // Không cần làm gì thêm nếu thành công, vì saveItem sẽ reload trang
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred: ' + error.message);
-            });
+            alert('Lỗi: ' + data.error);
         }
-    }
-    function saveItem(itemId, image, itemname, price, cost, categoryId) {
-        var formData = new FormData();
-        formData.append('action', 'edit');
-        formData.append('item_id', itemId);
-        formData.append('item-name', itemname);
-        formData.append('price', price);
-        formData.append('cost', cost);
-        formData.append('category_id', categoryId);
-        if (image) {
-        formData.append('image', image);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi xóa món');
+    });
+}
+function saveItem(itemId, price) {
+    var formData = new FormData();
+    formData.append('action', 'update');
+    formData.append('item_id', itemId);
+    formData.append('price', price);
+
+    console.log('Sending request with itemId:', itemId, 'price:', price);
+
+    return fetch('{{ url_for("menu.manage_item") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-
-        fetch('{{ url_for("menu.manage_item") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            console.log('Raw response:', response);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Parsed response:', data);
-            if (data.success) {
-                console.log('Item updated successfully');
-                location.reload(); // Reload để hiển thị ảnh mới
-            } else {
-                console.error('Error updating item:', data.error);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Server response:', data);
+        if (data.success) {
+            var row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+            if (row) {
+                var priceCell = row.cells[2];
+                priceCell.querySelector('.item-info').textContent = formatCurrency(price);
+                priceCell.querySelector('.item-info').setAttribute('data-price', price);
+                priceCell.querySelector('.item-info').style.display = 'block';
+                var oldInput = priceCell.querySelector('input');
+                if (oldInput) oldInput.remove();
+                row.querySelector('.edit-btn').textContent = 'Sửa';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
-    
-    function deleteItem(itemId) {
-        var formData = new FormData();
-        formData.append('action', 'delete');
-        formData.append('item_id', itemId);
-    
-        fetch('{{ url_for("menu.manage_item") }}', {
-            method: 'POST',
-            body: formData
-        }).then(response => response.json()).then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                console.error('Error deleting item:', data.error);
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-        });
-    }
+            alert('Cập nhật giá thành công!');
+            location.reload();
+        } else {
+            alert('Lỗi: ' + data.error);
+        }
+        return data;
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Có lỗi xảy ra: ' + error.message);
+        throw error;
+    });
+}
 
-// Hàm định dạng tiền tệ phía client
+function editItem(button, itemId) {
+    var row = button.closest('tr');
+    var priceCell = row.cells[2];
+    var editBtn = row.querySelector('.edit-btn');
+    
+    if (editBtn.textContent === 'Sửa') {
+        var currentPrice = priceCell.querySelector('.item-info').getAttribute('data-price');
+        console.log('Current price from data-price:', currentPrice);
+        
+        var oldInput = priceCell.querySelector('input');
+        if (oldInput) oldInput.remove();
+        
+        var priceInput = document.createElement('input');
+        priceInput.type = 'number';
+        priceInput.className = 'form-control';
+        priceInput.value = currentPrice || 0;
+        priceInput.style.width = '100px';
+        
+        priceCell.querySelector('.item-info').style.display = 'none';
+        priceCell.appendChild(priceInput);
+        editBtn.textContent = 'Lưu';
+        
+        priceInput.focus();
+    } else {
+        var priceInput = priceCell.querySelector('input');
+        var newPrice = priceInput.value;
+        console.log('New price entered:', newPrice);
+        
+        if (!newPrice || isNaN(newPrice) || newPrice <= 0) {
+            alert('Vui lòng nhập giá hợp lệ!');
+            return;
+        }
+        
+        saveItem(itemId, newPrice);
+    }
+}
+
+// Hàm định dạng tiền tệ
 function formatCurrency(value) {
     return parseFloat(value).toLocaleString('vi-VN') + ' VND';
 }
 </script>
+
 <style>
-    .item-image {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-    }
+.item-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
 </style>
 {% endblock %}

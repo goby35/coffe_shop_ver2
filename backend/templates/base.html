@@ -24,14 +24,14 @@
         <div class="collapse navbar-collapse" id="navbar">
             <div class="navbar-nav">
                 {% if user.is_authenticated %}
-                <a class="nav-item nav-link" id="logOut" href="/logout">Log Out</a>
-                <a class="nav-item nav-link" id="Home" href="/">Home</a>
+                <a class="nav-item nav-link" id="logOut" href="/logout">Đăng xuất</a>
+                <a class="nav-item nav-link" id="Home" href="/">Trang chủ</a>
                 <a class="nav-item nav-link" id="order" href="/order_management" >Quản lý đặt món</a>
                 {% if user.is_admin %}
-                <a class="nav-item nav-link" id="Dashboard" href="/dashboard">Dashboard</a>
+                <a class="nav-item nav-link" id="Dashboard" href="/hr_management">Bảng điều khiển</a>
                 {% endif %}
                 {% else %}
-                <a class="nav-item nav-link" id="login" href="/login">Login</a>
+                <a class="nav-item nav-link" id="login" href="/login">Đăng nhập</a>
                 <!--<a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a> -->  
                 {% endif %}
                 <!--Hiển thị tên tài khoản người dùng-->

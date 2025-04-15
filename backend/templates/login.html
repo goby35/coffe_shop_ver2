@@ -1,27 +1,205 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+
+{% block title %}Đăng nhập{% endblock %}
+
 {% block content %}
-    <h1>Welcome to the Login Page</h1>
-    <form method="post">
-        <h3 class="align-items-center justify-content-center d-flex">Login</h3>
-        <div class="form-group">
-            <label for="identifier">Email or Username</label>
-            <input type="text"
-            class="form-control"
-            id="identifier"
-            name="identifier"
-            placeholder="Enter your email or username"
-            required>
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo" class="auth-logo">
+                <h2>Đăng nhập</h2>
+                <p class="text-muted">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+            
+            <div class="auth-body">
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <div class="form-group">
+                        <label for="identifier">Email hoặc tên đăng nhập</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="identifier" 
+                                   name="identifier" 
+                                   placeholder="Nhập email hoặc tên đăng nhập"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mật khẩu</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Nhập mật khẩu của bạn"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
+                            </div>
+                            <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                    </button>
+                </form>
+            </div>
+
+            <div class="auth-footer">
+                <p>Chưa có tài khoản? 
+                    <a href="{{ url_for('auth.sign_up') }}">Đăng ký ngay</a>
+                </p>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" 
-            class="form-control " 
-            id="password" 
-            name="password" 
-            placeholder="Enter your password" 
-            required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-        
+    </div>
+</div>
+
+<style>
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.auth-header {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+}
+
+.auth-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.auth-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+}
+
+.auth-header p {
+    margin: 10px 0 0;
+    color: #666;
+}
+
+.auth-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.input-group {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: none;
+    color: #666;
+}
+
+.form-control {
+    border: none;
+    padding: 12px;
+    height: auto;
+}
+
+.form-control:focus {
+    box-shadow: none;
+}
+
+.forgot-password {
+    color: #4e73df;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-weight: 500;
+    background: #4e73df;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: #2e59d9;
+}
+
+.auth-footer {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+
+.auth-footer p {
+    margin: 0;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #4e73df;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.form-check-label {
+    color: #666;
+    font-size: 14px;
+}
+</style>
 {% endblock %}

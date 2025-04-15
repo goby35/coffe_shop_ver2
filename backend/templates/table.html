@@ -1,136 +1,83 @@
 {% extends "base.html" %}
-{% block title %} Table Management {% endblock %}
+{% block title %} Quản Lý Bàn {% endblock %}
 {% block content %}
-
-<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Table Management</h1>
-    </div>
-    <div class="container">
-        <form method="post" action="{{ url_for('table.manage_tables') }}">
-            <input type="hidden" name="action" value="create">
-            <div class="form-group">
-                <label for="name">Table Name</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="Enter table name" required>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Dashboard bên trái -->
+        <div class="col-md-2 bg-light p-3">
+            <div class="d-flex flex-column">
+                <a href="{{ url_for('auth.hr_management') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-users me-2"></i>Quản lý nhân viên
+                </a>
+                <a href="{{ url_for('material.materials_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-box me-2"></i>Quản lý nguyên liệu
+                </a>
+                <a href="{{ url_for('menu.menu_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-utensils me-2"></i>Quản lý menu
+                </a>
+                <a href="{{ url_for('table.manage_tables') }}" class="btn btn-outline-primary mb-2">
+                    <i class="fas fa-chair me-2"></i>Quản lý bàn
+                </a>
+                <a href="{{ url_for('report.report_page') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                </a>
             </div>
-            <div class="form-group">
-                <label for="status">Status</label>
-                <select class="form-control" id="status" name="status" required>
-                    <option value="true">Available</option>
-                    <option value="false">Occupied</option>
-                </select>
+        </div>
+
+        <!-- Nội dung chính -->
+        <div class="col-md-10">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Quản Lý Bàn</h1>
+                </div>
+                <div class="container">
+                    <!-- Form thêm bàn -->
+                    <form method="post" action="{{ url_for('table.manage_tables') }}">
+                        <input type="hidden" name="action" value="create">
+                        <div class="form-group">
+                            <label for="quantity">Số lượng bàn muốn thêm</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Nhập số lượng bàn" min="1" required>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-primary">Thêm bàn</button>
+                    </form>
+
+                    <!-- Form xóa bàn -->
+                    <form method="post" action="{{ url_for('table.manage_tables') }}" style="margin-top: 20px;">
+                        <input type="hidden" name="action" value="delete_multiple">
+                        <div class="form-group">
+                            <label for="delete_quantity">Số lượng bàn muốn xóa</label>
+                            <input type="number" class="form-control" id="delete_quantity" name="delete_quantity" placeholder="Nhập số lượng bàn muốn xóa" min="1" required>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-danger">Xóa bàn</button>
+                    </form>
+
+                    <hr>
+                    <h2>Danh Sách Bàn</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên Bàn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if tables %}
+                                {% for table in tables %}
+                                <tr data-table-id="{{ table.id }}">
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ table.name }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <p>Chưa có bàn nào.</p>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <br>
-            <button type="submit" class="btn btn-primary">Create Table</button>
-        </form>
-        <hr>
-        <h2>Tables</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Table Name</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if table %}
-                    {% for table in table %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            <span class="table-info"> {{ table.name }}</span>
-                            <input type="text" class="form-control table-edit" name="name" value="{{ table.name }}" style="display: none;">
-                        </td>
-                        <td>
-                            <span class="table-info"> {{ 'Available' if table.status else 'Occupied' }}</span>
-                            <select class="form-control table-edit" name="status" style="display: none;">
-                                <option value="true" {% if table.status %}selected{% endif %}>Available</option>
-                                <option value="false" {% if not table.status %}selected{% endif %}>Occupied</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button class="btn btn-warning edit-btn" onclick="editTable(this, '{{ table.id }}')">Edit</button>
-                            <button class="btn btn-danger" onclick="deleteTable('{{ table.id }}')">Delete</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <p>No tables found.</p>
-                {% endif %}
-            </tbody>
-        </table>
+        </div>
     </div>
-</main>
 </div>
-</div>
-
-<script>
-function editTable(button, tableId) {
-    var row = button.closest('tr');
-    var spans = row.querySelectorAll('.table-info');
-    var inputs = row.querySelectorAll('.table-edit');
-    var editBtn = row.querySelector('.edit-btn');
-
-    if (editBtn.textContent === 'Edit') {
-        spans.forEach(span => span.style.display = 'none');
-        inputs.forEach(input => input.style.display = 'block');
-        editBtn.textContent = 'Save';
-    } else {
-        var name = row.querySelector('input[name="name"]').value;
-        var status = row.querySelector('select[name="status"]').value === 'true';
-
-        saveTable(tableId, name, status);
-
-        spans[0].textContent = name;
-        spans[1].textContent = status ? 'Available' : 'Occupied';
-
-        spans.forEach(span => span.style.display = 'block');
-        inputs.forEach(input => input.style.display = 'none');
-        editBtn.textContent = 'Edit';
-    }
-}
-
-function saveTable(tableId, name, status) {
-    var formData = new FormData();
-    formData.append('action', 'edit');
-    formData.append('id', tableId);
-    formData.append('name', name);
-    formData.append('status', status);
-
-    fetch('{{ url_for("table.manage_tables") }}', {
-        method: 'POST',
-        body: formData
-    }).then(response => response.json()).then(data => {
-        if (data.success) {
-            console.log('Table updated successfully');
-        } else {
-            console.error('Error updating table:', data.error);
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
-}
-
-function deleteTable(tableId) {
-    var formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('id', tableId);
-
-    fetch('{{ url_for("table.manage_tables") }}', {
-        method: 'POST',
-        body: formData
-    }).then(response => response.json()).then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            console.error('Error deleting table:', data.error);
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
-}
-</script>
-
 {% endblock %}
