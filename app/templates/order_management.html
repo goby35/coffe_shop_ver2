@@ -633,24 +633,37 @@
         },
         methods: {
             selectTable(table) {
-                fetch(`/api/orders/table/${table.name}`)
-                    .then(response => response.json())
+                // Chuẩn hóa tên bàn
+                const tableName = table.name.toString().padStart(2, '0');
+                console.log('Đang kiểm tra bàn:', tableName);
+                
+                fetch(`/api/orders/table/${tableName}`)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success) {
+                        console.log('Response data:', data);
+                        if (data.success && data.order) {
                             // Bàn đã có đơn hàng
                             alert(`Bàn này đã được đặt! Mã đơn hàng: ${data.order.id}`);
                         } else {
                             // Bàn trống, cho phép chọn
                             this.selectedTable = table;
-                            this.tableCode = 'Bàn ' + table.name;
+                            this.tableCode = 'Bàn ' + tableName;
                             this.orderId = '';
                             this.selectedItems = {};
-                            document.getElementById('tableCode').value = 'Bàn ' + table.name;
+                            document.getElementById('tableCode').value = 'Bàn ' + tableName;
                         }
                     })
                     .catch(error => {
                         console.error('Lỗi khi kiểm tra trạng thái bàn:', error);
-                        alert('Không thể kiểm tra trạng thái bàn. Vui lòng thử lại sau.');
+                        // Vẫn cho phép chọn bàn ngay cả khi có lỗi
+                        this.selectedTable = table;
+                        this.tableCode = 'Bàn ' + tableName;
+                        this.orderId = '';
+                        this.selectedItems = {};
+                        document.getElementById('tableCode').value = 'Bàn ' + tableName;
                     });
             },
             addMenuItem(menu) {
@@ -853,5 +866,6 @@
 
     // Mount Vue app
     app.mount('#app');
+
 </script>
 {% endblock %}

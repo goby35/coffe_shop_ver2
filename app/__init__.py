@@ -19,6 +19,13 @@ def create_app():
         
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB_NAME
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 3600,
+        'pool_timeout': 30,
+        'max_overflow': 10,
+        'pool_size': 5
+    }
     app.config['SESSION_TYPE'] = 'filesystem'  # Lưu session vào file
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Hỗ trợ CORS
     app.config['SESSION_COOKIE_SECURE'] = True  # Dùng HTTPS nếu deploy
@@ -37,7 +44,7 @@ def create_app():
     from .order import order
     from .material import material
     from .report import report
-
+    from .bill import bill
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
@@ -46,6 +53,8 @@ def create_app():
     app.register_blueprint(order, url_prefix='/')
     app.register_blueprint(material, url_prefix='/')
     app.register_blueprint(report, url_prefix='/')
+    app.register_blueprint(bill, url_prefix='/')
+    
     # Tạo database
     with app.app_context():
         db.create_all()

@@ -12,7 +12,7 @@ from datetime import datetime
 menu = Blueprint('menu', __name__)
 
 # Thư mục lưu ảnh
-UPLOAD_FOLDER = os.path.join('backend', 'static', 'uploads')
+UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 

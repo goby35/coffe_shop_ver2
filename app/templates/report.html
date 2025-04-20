@@ -21,7 +21,10 @@
                     <i class="fas fa-chair me-2"></i>Quản lý bàn
                 </a>
                 <a href="{{ url_for('report.report_page') }}" class="btn btn-outline-primary mb-2">
-                    <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                    <i class="fas fa-chart-bar me-2"></i>Báo cáo doanh thu
+                </a>
+                <a href="{{ url_for('bill.view_bills') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-file-invoice me-2"></i>Xem Hóa đơn
                 </a>
             </div>
         </div>
@@ -34,7 +37,7 @@
                 <!-- Form lọc -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
-                        <form method="POST">
+                        <form method="POST" action="{{ url_for('report.report_page') }}">
                             <div class="row g-3">
                                 <div class="col-md-3">
                                     <label for="filter_type" class="form-label">Loại báo cáo</label>
@@ -59,27 +62,17 @@
                     </div>
                 </div>
 
-                <!-- Biểu đồ -->
+                <!-- Số liệu thống kê -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
-                        <h5 class="mb-0">Doanh thu {% if filter_type == 'month' %}theo tháng{% else %}theo ngày{% endif %}</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="revenueChart" height="100"></canvas>
-                    </div>
-                </div>
-
-                <!-- Số liệu thống kê -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Thống kê lợi nhuận theo tháng</h5>
+                        <h5 class="mb-0">Thống kê lợi nhuận theo ngày/tháng</h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Tháng</th>
+                                        <th>Ngày/Tháng</th>
                                         <th>Doanh thu</th>
                                         <th>Chi phí</th>
                                         <th>Lợi nhuận</th>
@@ -97,18 +90,19 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="mt-3">
-                            <button class="btn btn-outline-primary" onclick="exportChart()">
-                                <i class="fas fa-download me-2"></i>Xuất biểu đồ (PNG)
+                    </div>
+                </div>
+
+                <!-- Export Button -->
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('report.export_csv') }}">
+                            <input type="hidden" name="start_date" value="{{ start_date }}">
+                            <input type="hidden" name="end_date" value="{{ end_date }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Xuất Excel
                             </button>
-                            <form method="POST" action="{{ url_for('report.export_csv') }}" style="display: inline;">
-                                <input type="hidden" name="start_date" value="{{ start_date }}">
-                                <input type="hidden" name="end_date" value="{{ end_date }}">
-                                <button type="submit" class="btn btn-outline-secondary">
-                                    <i class="fas fa-file-csv me-2"></i>Xuất CSV
-                                </button>
-                            </form>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -139,64 +133,4 @@
         border-radius: 0.25rem;
     }
 </style>
-
-<script>
-    // Vẽ biểu đồ
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    const revenueChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: JSON.parse('{{ labels | tojson | safe }}'),
-            datasets: [{
-                label: 'Doanh thu',
-                data: JSON.parse('{{ values | tojson | safe }}'),
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Doanh thu (VND)',
-                        color: '#6c757d'
-                    },
-                    ticks: {
-                        color: '#6c757d'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: '{{ "Tháng" if filter_type == "month" else "Ngày" }}',
-                        color: '#6c757d'
-                    },
-                    ticks: {
-                        color: '#6c757d'
-                    }
-                }
-            }
-        }
-    });
-
-    // Xuất biểu đồ thành PNG
-    function exportChart() {
-        html2canvas(document.getElementById('revenueChart')).then(canvas => {
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = 'revenue_chart.png';
-            link.click();
-        });
-    }
-</script>
 {% endblock %}

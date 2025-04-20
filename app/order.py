@@ -2,6 +2,7 @@ from flask import Blueprint, json, request, jsonify, render_template, redirect, 
 from .models import Order, Table, User, Category, Item, OrderItem, PriceItem, OrderStatus, db
 from flask_login import login_required, current_user
 from datetime import datetime
+import time
 
 order = Blueprint('order', __name__)
 
@@ -321,29 +322,68 @@ def complete_order_api(order_id):
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+@order.route('/api/tables', methods=['GET'])
+@login_required
+def get_all_tables():
+    try:
+        tables = Table.query.all()
+        return jsonify({
+            'success': True,
+            'tables': [{
+                'id': table.id,
+                'name': table.name,
+                'status': table.to_dict()['status']
+            } for table in tables]
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @order.route('/api/orders/table/<table_name>', methods=['GET'])
 @login_required
 def get_order_by_table(table_name):
-    logging.debug(f"Kiểm tra đơn hàng cho bàn: {table_name}")
+    start_time = time.time()
     try:
+        # Kiểm tra định dạng tên bàn
+        if not table_name or not isinstance(table_name, str):
+            return jsonify({
+                'success': False, 
+                'error': 'Tên bàn không hợp lệ',
+                'response_time': f"{(time.time() - start_time) * 1000:.2f}ms"
+            }), 400
+
+        # Tìm bàn
         table = Table.query.filter_by(name=table_name).first()
         if not table:
-            logging.error(f"Không tìm thấy bàn: {table_name}")
-            return jsonify({'success': False, 'error': 'Không tìm thấy bàn'}), 404
+            return jsonify({
+                'success': False, 
+                'error': f'Không tìm thấy bàn {table_name}',
+                'response_time': f"{(time.time() - start_time) * 1000:.2f}ms"
+            }), 404
 
+        # Tìm đơn hàng đang chờ
         order = Order.query.filter_by(table_id=table.id)\
             .join(OrderStatus)\
             .filter(OrderStatus.finish_time.is_(None))\
             .first()
 
         if not order:
-            logging.debug(f"Không có đơn hàng đang chờ cho bàn: {table_name}")
-            return jsonify({'success': False, 'error': 'Không có đơn hàng đang chờ cho bàn này'}), 404
+            return jsonify({
+                'success': False, 
+                'error': 'Không có đơn hàng đang chờ cho bàn này',
+                'response_time': f"{(time.time() - start_time) * 1000:.2f}ms"
+            }), 200  # Thay đổi status code từ 404 thành 200
 
+        # Lấy danh sách món trong đơn hàng
         order_items = OrderItem.query.filter_by(order_id=order.id).all()
         items = []
         for item in order_items:
             menu = Item.query.get(item.item_id)
+            if not menu:
+                continue
+                
             latest_price = PriceItem.query.filter_by(item_id=menu.id)\
                 .order_by(PriceItem.updated_date.desc())\
                 .first()
@@ -355,7 +395,7 @@ def get_order_by_table(table_name):
                 'image_url': menu.image_url
             })
 
-        logging.debug(f"Đã tìm thấy đơn hàng cho bàn {table_name}: {order.id}")
+        response_time = (time.time() - start_time) * 1000  # Chuyển sang milliseconds
         return jsonify({
             'success': True,
             'order': {
@@ -366,9 +406,13 @@ def get_order_by_table(table_name):
                 'order_time': order.order_time.isoformat(),
                 'status': order.status.to_dict() if order.status else None,
                 'items': items
-            }
+            },
+            'response_time': f"{response_time:.2f}ms"
         })
 
     except Exception as e:
-        logging.error(f"Lỗi khi kiểm tra đơn hàng cho bàn {table_name}: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False, 
+            'error': str(e),
+            'response_time': f"{(time.time() - start_time) * 1000:.2f}ms"
+        }), 500

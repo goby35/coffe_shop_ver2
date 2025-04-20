@@ -3,6 +3,7 @@
 Hệ thống quản lý quán cà phê với các chức năng chính:
 
 ## Tính năng
+- Quản lý nhân viên
 - Quản lý bàn
 - Quản lý menu
 - Quản lý đơn hàng
@@ -33,7 +34,7 @@ python run.py
 
 ## Cấu trúc dự án
 ```
-backend/
+app/
   ├── models/         # Database models
   ├── routes/         # API routes
   ├── templates/      # HTML templates
